@@ -1,11 +1,15 @@
 $ ( document ).ready( onReady );
 
+// create an object to hold all the variables
 let equation = {
     firstNumber: 0,
     operator: '',
     secondNumber: 0,
     result: ''
 };
+
+// create a variable set as false so the answer doesn't stay when refreshed
+let calledPost = false;
 
 function onReady(){
     console.log('JQ');
@@ -29,15 +33,15 @@ function onEqualButton(){
         data: equation
     }).then( function( response ){
         console.log( 'back from POST with:', response );
+        // turn calledPost true here
+        calledPost = true;
         // if successful do a GET to get results and history
     }).catch( function( err ){
         // catch an error
         alert( 'error performing calculation' );
         console.log( err );
     })// end post
-    let response = getCalculationResult();
-    updateResults( response );
-
+    getCalculationResult();
 } // end onEqualButton
 
 function onOperatorButton(){
@@ -64,7 +68,16 @@ function getCalculationResult( ){
             // append to DOM
             el.append(`<li>${response[i].firstNumber} ${response[i].operator} ${response[i].secondNumber} = ${response[i].result}</li>`);
         }
-        return response;
+        // create an operation to only run if calledPost is true
+        if(calledPost)
+        {
+            // create variable for results id
+            let element = $( '#result' );
+            // empty
+            element.empty();
+            // append the answer to the DOM
+            element.append(`${response[response.length - 1].result}`);
+        }
     }).catch( function( err ){
         // alert if there are any issues
         alert( 'error getting calculationResults from server ' + err );
@@ -80,12 +93,3 @@ function onClearButton( ){
     $('#firstInput').val( ' ' );
     $('#secondInput').val( ' ' );
 }// end onClearButton
-
-function updateResults( response ){
-    // create variable for results id
-    let element = $( '#result' );
-    // empty
-    element.empty();
-    // append the answer to the DOM
-    element.append(`${response[response.length - 1].result}`);
-}
